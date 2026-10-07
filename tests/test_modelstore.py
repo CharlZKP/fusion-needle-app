@@ -177,3 +177,19 @@ def test_a_failed_download_is_a_readable_model_error(tmp_path, monkeypatch):
     manager = ModelManager(Settings(tmp_path / "settings.json"))
     manager.start_async().join(30)
     assert manager.state == "error" and "could not be downloaded" in manager.detail and "offline" in manager.detail
+
+
+def test_a_model_cached_by_an_older_app_is_checked_again(repo, monkeypatch):
+    monkeypatch.setattr(modelstore, "HF_REPO", "acme/demo")     # the built-in repository, not an override
+    path = modelstore.ensure_model()                            # the fake manifest carries no version: old
+    before = len(repo.requests)
+    assert modelstore.ensure_model() == path
+    assert [name for name, _range in repo.requests[before:]] == ["/acme/demo/resolve/main/manifest.json"]
+    monkeypatch.setattr(modelstore, "MIN_MODEL_VERSION", "")        # no minimum: nothing is asked
+    before = len(repo.requests)
+    assert modelstore.ensure_model() == path and len(repo.requests) == before
+    monkeypatch.setattr(modelstore, "MIN_MODEL_VERSION", "9.0.0")
+    repo.stop()                                                 # offline: the older copy is used, with a note
+    notes = []
+    assert modelstore.ensure_model(note=notes.append) == path
+    assert "newer model" in notes[0]

@@ -7,7 +7,7 @@
 The desktop app starts it as a child process (``python -m stepserver.cli serve``).
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 # The cactus-needle release this code is written against. A .cact archive is
 # tied to the engine version, so this pin moves together with pyproject.toml.

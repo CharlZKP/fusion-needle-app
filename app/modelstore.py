@@ -41,6 +41,9 @@ from . import __version__, paths
 HF_REPO = "CharlZKP/fusion-needle3"            # "<owner>/<name>" on huggingface.co
 HF_REVISION = "main"    # a branch, a tag or a commit hash
 # --------------------------------------------------------------------------------
+# The oldest published model this version of the app is made for (its tool list has to match the
+# app's). A copy downloaded by an earlier version is replaced on the next start with a connection.
+MIN_MODEL_VERSION = "0.2.0"
 HF_ENDPOINT = "https://huggingface.co"
 MANIFEST_NAME = "manifest.json"
 CHUNK = 256 * 1024
@@ -115,6 +118,16 @@ def check_manifest(data) -> dict:
                 and isinstance(entry.get("sha256"), str) and _SHA_RE.match(entry["sha256"])):
             raise StoreError("the model manifest has an entry without a valid file name, size or sha256")
     return data
+
+
+def outdated(manifest: dict) -> bool:
+    """True for a manifest of the published model that is older than MIN_MODEL_VERSION.
+    Another repository (set through the environment) has its own version numbers and is left alone."""
+    if source()["repo"] != HF_REPO:
+        return False
+    def number(text) -> tuple:
+        return tuple(int(part) for part in re.findall(r"\d+", str(text or ""))[:3])
+    return number(manifest.get("version")) < number(MIN_MODEL_VERSION)
 
 
 def local_manifest(directory: Path | None = None) -> dict | None:
@@ -257,6 +270,14 @@ def ensure_model(variant: str | None = None, progress=None, note=None, force: bo
     """
     directory = models_dir()
     manifest = None if force else local_manifest(directory)
+    fresh = None
+    if manifest is not None and outdated(manifest):
+        try:
+            fresh = fetch_manifest()
+            manifest = None
+        except StoreError as failure:                     # offline: the older model still works for most tools
+            if note is not None:
+                note(f"a newer model is published, but it could not be fetched ({failure}); using the one here")
     if manifest is not None:
         try:
             entry = pick(manifest, variant)
@@ -267,7 +288,7 @@ def ensure_model(variant: str | None = None, progress=None, note=None, force: bo
             if path.is_file() and path.stat().st_size == entry["bytes"] and (
                     not verify or sha256_file(path) == entry["sha256"]):
                 return path
-    manifest = fetch_manifest()
+    manifest = fresh or fetch_manifest()
     entry = pick(manifest, variant)
     path = directory / entry["file"]
     if not (path.is_file() and path.stat().st_size == entry["bytes"] and sha256_file(path) == entry["sha256"]):

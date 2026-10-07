@@ -4,5 +4,5 @@ How a step runs is described in README.md.
 The core runs on the standard library alone. pywebview is optional.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 APP_NAME = "Fusion Needle"

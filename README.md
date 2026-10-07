@@ -23,8 +23,30 @@ Your text and your designs are not sent to a cloud service.
 </p>
 
 > [!WARNING]
-> **Early version, not yet tried with a real Fusion.** It has only been tested against a stand-in for Fusion.
+> **Early version, only lightly tried with a real Fusion.** A handful of requests have been run by hand in
+> Fusion on Windows; most tools have only been tested against a stand-in for Fusion.
 > Please read [Status](#status) first, and use it on designs you can afford to break.
+
+## What is new in 0.2.0
+
+- **14 more things you can ask for.** Whole shapes in one step, holes without coordinates, and work on the
+  body: `box 40 by 30 by 10`, `corner holes 5 mm diameter with 8 mm margin`, `M6 counterbore hole`,
+  `split the body in half`, `make 3 copies 50 mm apart`, `set the thickness to 4 mm`, `colour it red`. The full
+  list is under [What you can ask for](#what-you-can-ask-for).
+- **A check before anything runs.** A call whose numbers are not written in your request is held back and
+  shown to you instead of being sent to Fusion.
+- **A new look**, with example requests to click on.
+- **Your own model.** Settings can point the app at a model in another Hugging Face repository.
+- **The model is replaced automatically.** If an earlier version downloaded the model, 0.2.0 downloads the
+  new one (63 MB) on its first start.
+
+> [!NOTE]
+> The new model knows more tools but is more eager to use them: on vague or incomplete requests it makes a
+> wrong call more often than the 0.1.0 model did. Read each step before you approve it. The numbers are on the
+> [model card](https://huggingface.co/CharlZKP/fusion-needle3).
+> Wording matters too: `set the thickness to 4 mm` works, `make it 4 mm thick` is read as an extrude, and
+> `cut it in half` is read as a boolean cut. Say the tool's own word (split, thickness, corner holes) when a
+> request is misread.
 
 ## Contents
 
@@ -248,22 +270,22 @@ share it. It does not contain tokens.
 
 ## Status
 
-This is version 0.1.1, an early release. In plain words:
+This is version 0.2.0, an early release. In plain words:
 
-- **It has not been run with a real Autodesk Fusion yet**, on any system.
-- It runs on **Linux**. It has **not been started on Windows or macOS** yet.
+- **It has only been tried lightly with a real Autodesk Fusion**: a handful of requests, by hand, on Windows.
+- It runs on **Linux** and **Windows**. On **macOS** it has passed the automated tests but nobody has used it yet.
 
 In detail:
 
 | Area | Where it stands |
 | --- | --- |
-| **Real Autodesk Fusion, any platform** | **Unverified.** No script of this project has been executed in a real Fusion design yet. The templates are syntax-checked and run against a stub of the Fusion API, and the app is tested against a stand-in for Fusion's MCP server (`tests/fake_fusion.py`). The shapes of Fusion's answers come from third-party reference material and recordings made by others, not from our own runs. |
-| App and tests on Linux | Run. The PyInstaller build has been made and started on Linux x86_64. |
-| App on Windows | **Unverified.** The launcher (`Start Fusion Needle.bat`), the build script, and the Windows half of the process supervision (Job Objects) were written and reviewed, not run. [`packaging/README.md`](packaging/README.md) is the step-by-step first-run check. |
-| App on macOS | **Unverified.** Never started on macOS; the first CI build is the first run. |
+| **Real Autodesk Fusion** | **Mostly unverified.** A few requests (an extrude, a shell) have been run by hand in Fusion on Windows and worked. Most script templates, and all of the tools added in 0.2.0 (box, cylinder, corner and centre holes, bolt holes, split, copy, set thickness, scale, rotate, delete, hide, show, colour), have only been syntax-checked and run against a stub of the Fusion API. Expect some to fail on first use. |
+| App and tests on Linux | Run. The automated tests pass and the packaged build has been made and started on Linux x86_64. |
+| App on Windows | Runs from source and has been used with Fusion. The automated tests pass on Windows, and the packaged build starts and downloads the model; a full session with the packaged build has not been watched yet. |
+| App on macOS | The automated tests pass on macOS and the packaged build is made there. **Nobody has started it by hand on a Mac yet.** |
 | Model quality | See the [model card](https://huggingface.co/CharlZKP/fusion-needle3). |
 
-So the Windows and macOS steps above describe what is expected to happen, not what has been watched happening.
+So the macOS steps above describe what is expected to happen, not what has been watched happening.
 
 Known assumptions that a first session with a real Fusion has to confirm, most important first:
 
@@ -571,7 +593,7 @@ xattr -dr com.apple.quarantine FusionNeedle
 
 [`.github/workflows/release.yml`](.github/workflows/release.yml) turns a tag into a release:
 
-1. Push a tag such as `v0.1.1`. The tag has to match the version in `app/__init__.py`, or the build
+1. Push a tag such as `v0.2.0`. The tag has to match the version in `app/__init__.py`, or the build
    stops.
 2. Three jobs build the app with Python 3.12 and PyInstaller on Linux x86_64, macOS arm64 and Windows x86_64,
    with the engine library included, and run the executable once with `--version`.
@@ -586,7 +608,7 @@ xattr -dr com.apple.quarantine FusionNeedle
 | `FusionNeedle-<tag>-macos-arm64.tar.gz` | `.tar.gz.sha256` |
 | `FusionNeedle-<tag>-linux-x86_64.tar.gz` | `.tar.gz.sha256` |
 
-`<tag>` is the tag as pushed, for example `v0.1.1`. The GitHub Actions used by both workflows are
+`<tag>` is the tag as pushed, for example `v0.2.0`. The GitHub Actions used by both workflows are
 pinned to commit hashes.
 
 ## Contributing
