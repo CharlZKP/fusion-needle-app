@@ -70,6 +70,16 @@ def leftovers():
                 subprocess.run(["taskkill", "/PID", str(pid), "/T", "/F"], capture_output=True)
 
 
+def same_server(recorded: int, reported: int) -> bool:
+    """Is the server pid the supervisor recorded the one the fake server reported?
+    On Windows the stand-in interpreter is a .cmd file, so the recorded process is the
+    cmd.exe that runs it and the fake server is its child: only "a live process, not
+    the fake server itself" can be checked there."""
+    if sys.platform == "win32":
+        return recorded != reported and supervisor.alive(recorded)
+    return recorded == reported
+
+
 def start_supervised(tmp_path, leftovers, *options, stubborn=False):
     pids_file, pid_file = tmp_path / "pids.json", tmp_path / "run" / "server-test.json"
     env = dict(os.environ, FAKE_SERVE_PIDS=str(pids_file), FAKE_SERVE_STUBBORN="1" if stubborn else "0")
@@ -91,9 +101,14 @@ def test_closing_the_control_pipe_stops_server_and_workers(tmp_path, leftovers):
     assert supervisor.is_recorded_process(record["server_pid"], record["server_start"], record["server_command"])
     assert supervisor.alive(pids["server"]) and supervisor.alive(pids["worker"])
     process.stdin.close()                                   # all the app does to stop its server
-    assert process.wait(15) == 0                            # the fake server ends on Ctrl+C, like the step server
+    output_wanted = ["the app closed the control pipe"]
+    if sys.platform == "win32":
+        assert process.wait(15) == 1                        # Windows has no Ctrl+C for a child: it is terminated
+    else:
+        assert process.wait(15) == 0                        # the fake server ends on Ctrl+C, like the step server
+        output_wanted.append("interrupted")
     output = process.stdout.read().decode()
-    assert "interrupted" in output and "the app closed the control pipe" in output
+    assert all(text in output for text in output_wanted)
     assert gone([pids["server"], pids["worker"]])           # the worker ignores every signal but KILL
     assert not pid_file.exists()
 
@@ -157,7 +172,8 @@ def test_hard_kill_of_the_app_takes_the_server_and_workers_with_it(app_with_fake
     running = app_with_fake_server
     model, pids = running["ready"]["model"], running["pids"]
     assert model["managed"] and model["model"] == "fake-serve.cact"
-    assert model["pid"] != pids["server"] and model["server_pid"] == pids["server"]     # pid: the supervisor
+    assert model["pid"] != pids["server"]                                               # pid: the supervisor
+    assert same_server(model["server_pid"], pids["server"])
     assert pids["token"] and "stepserver.cli" in pids["argv"]      # started the way the step server is started
     everything = [model["pid"], pids["server"], pids["worker"]]
     assert all(supervisor.alive(pid) for pid in everything)
@@ -273,7 +289,7 @@ def test_model_manager_starts_through_the_supervisor_and_stops_everything(tmp_pa
         pids = read_json(tmp_path / "pids.json")
         leftovers.extend([manager.process.pid, pids["server"], pids["worker"]])
         snapshot = manager.snapshot()
-        assert snapshot["pid"] == manager.process.pid and snapshot["server_pid"] == pids["server"]
+        assert snapshot["pid"] == manager.process.pid and same_server(snapshot["server_pid"], pids["server"])
         assert manager.pid_file.is_file() and manager.token and manager.token not in " ".join(manager.log)
         everything = [manager.process.pid, pids["server"], pids["worker"]]
     finally:
