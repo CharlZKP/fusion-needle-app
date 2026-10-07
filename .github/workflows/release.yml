@@ -83,8 +83,9 @@ jobs:
         shell: pwsh
         run: |
           Get-ChildItem dist\FusionNeedle\_internal\needle
-          & dist\FusionNeedle\FusionNeedle.exe --version
-          if ($LASTEXITCODE -ne 0) { exit 1 }
+          # a windowed program: PowerShell does not wait for it or set $LASTEXITCODE, so start it explicitly
+          $p = Start-Process dist\FusionNeedle\FusionNeedle.exe -ArgumentList '--version' -Wait -PassThru -NoNewWindow
+          if ($p.ExitCode -ne 0) { Write-Error "exit code $($p.ExitCode)"; exit 1 }
 
       - name: Archive (Linux, macOS)
         if: runner.os != 'Windows'
