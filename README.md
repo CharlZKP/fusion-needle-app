@@ -1,4 +1,8 @@
-# Fusion Needle
+<p align="center">
+  <img src="app/ui/icon.svg" width="128" height="128" alt="Fusion Needle logo: a white needle and thread on an orange tile">
+</p>
+
+<h1 align="center">Fusion Needle</h1>
 
 **Type what you want to model, and Fusion Needle creates it in Autodesk Fusion, one step at a time.**
 
