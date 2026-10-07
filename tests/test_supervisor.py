@@ -88,7 +88,11 @@ def start_supervised(tmp_path, leftovers, *options, stubborn=False):
          sys.executable, str(TESTS / "fake_serve.py"), "-m", "stepserver.cli", "serve", "--port", "0"],
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
     leftovers.append(process.pid)
-    pids = read_json(pids_file)
+    try:
+        pids = read_json(pids_file)
+    except AssertionError as failure:                       # say what the supervisor printed
+        process.kill()
+        raise AssertionError(f"{failure}; supervisor output: {process.stdout.read().decode(errors='replace')!r}")
     leftovers.extend([pids["server"], pids["worker"]])
     return process, pids, pid_file
 
@@ -181,6 +185,8 @@ def test_hard_kill_of_the_app_takes_the_server_and_workers_with_it(app_with_fake
     hard_kill(running["process"].pid)                       # no atexit, no signal handler, no finally
     running["process"].wait(10)
     assert gone(everything), "the model server or its worker outlived the app"
+    if sys.platform == "win32":                             # the job object kills the supervisor too, so its
+        supervisor.cleanup_stale(running["run"])            # record stays until the next start removes it
     assert not list(running["run"].glob("server-*.json"))
 
 

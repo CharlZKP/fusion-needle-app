@@ -76,7 +76,7 @@ def start_id(pid: int) -> str | None:
             return None
         return found[1]
     try:                                                # macOS, BSD
-        out = subprocess.run(["ps", "-o", "stat=,lstart=", "-p", str(pid)], capture_output=True, text=True,
+        out = subprocess.run(["ps", "-o", "stat=", "-o", "lstart=", "-p", str(pid)], capture_output=True, text=True,
                              timeout=10)
     except (OSError, subprocess.SubprocessError):
         return None
