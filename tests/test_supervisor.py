@@ -92,7 +92,12 @@ def start_supervised(tmp_path, leftovers, *options, stubborn=False):
         pids = read_json(pids_file)
     except AssertionError as failure:                       # say what the supervisor printed
         process.kill()
-        raise AssertionError(f"{failure}; supervisor output: {process.stdout.read().decode(errors='replace')!r}")
+        os.set_blocking(process.stdout.fileno(), False)     # a surviving child may still hold the pipe open
+        said = (process.stdout.read() or b"").decode(errors="replace")
+        listing = subprocess.run(["ps", "-axo", "pid,ppid,stat,etime,command"], capture_output=True, text=True).stdout \
+            if sys.platform != "win32" else ""
+        ours = [line for line in listing.splitlines() if "fake_serve" in line or "supervisor" in line]
+        raise AssertionError(f"{failure}; supervisor output: {said!r}; processes: {ours}")
     leftovers.extend([pids["server"], pids["worker"]])
     return process, pids, pid_file
 
