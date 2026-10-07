@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "fusion-needle"
-version = "0.1.0"
+version = "0.1.1"
 description = "Desktop app that drives Autodesk Fusion step by step with a Needle 3 fine-tune"
 readme = "README.md"
 requires-python = ">=3.12"

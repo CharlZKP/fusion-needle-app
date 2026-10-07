@@ -248,7 +248,7 @@ share it. It does not contain tokens.
 
 ## Status
 
-This is version 0.1.0, an early release. In plain words:
+This is version 0.1.1, an early release. In plain words:
 
 - **It has not been run with a real Autodesk Fusion yet**, on any system.
 - It runs on **Linux**. It has **not been started on Windows or macOS** yet.
@@ -571,7 +571,7 @@ xattr -dr com.apple.quarantine FusionNeedle
 
 [`.github/workflows/release.yml`](.github/workflows/release.yml) turns a tag into a release:
 
-1. Push a tag such as `v0.1.0`. The tag has to match the version in `app/__init__.py`, or the build
+1. Push a tag such as `v0.1.1`. The tag has to match the version in `app/__init__.py`, or the build
    stops.
 2. Three jobs build the app with Python 3.12 and PyInstaller on Linux x86_64, macOS arm64 and Windows x86_64,
    with the engine library included, and run the executable once with `--version`.
@@ -586,7 +586,7 @@ xattr -dr com.apple.quarantine FusionNeedle
 | `FusionNeedle-<tag>-macos-arm64.tar.gz` | `.tar.gz.sha256` |
 | `FusionNeedle-<tag>-linux-x86_64.tar.gz` | `.tar.gz.sha256` |
 
-`<tag>` is the tag as pushed, for example `v0.1.0`. The GitHub Actions used by both workflows are
+`<tag>` is the tag as pushed, for example `v0.1.1`. The GitHub Actions used by both workflows are
 pinned to commit hashes.
 
 ## Contributing
