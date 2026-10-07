@@ -17,6 +17,7 @@ import subprocess
 import sys
 import threading
 import time
+import socketserver
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -35,6 +36,16 @@ try:                                                   # builds that download th
     from . import modelstore
 except ImportError:
     modelstore = None
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer without the reverse DNS lookup of its own address at start-up
+    (HTTPServer.server_bind calls socket.getfqdn, which can take many seconds on macOS)."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
 
 MAX_BODY = 1 << 20
 LOOPBACK_HOSTS = ("127.0.0.1", "localhost", "[::1]")
@@ -591,7 +602,7 @@ def make_handler(app: App):
 
 
 def serve(app: App, port: int = 0) -> ThreadingHTTPServer:
-    httpd = ThreadingHTTPServer(("127.0.0.1", port), make_handler(app))
+    httpd = LocalHTTPServer(("127.0.0.1", port), make_handler(app))
     httpd.daemon_threads = True
     app.httpd = httpd
     threading.Thread(target=httpd.serve_forever, name="ui-http", daemon=True).start()

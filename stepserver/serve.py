@@ -15,11 +15,22 @@ import os
 import sys
 import threading
 import time
+import socketserver
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from .calls import fold_numbers, normalise_calls
 from .engine import BASE, EngineClient, EngineError
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer without the reverse DNS lookup of its own address at start-up
+    (HTTPServer.server_bind calls socket.getfqdn, which can take many seconds on macOS)."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
 
 MAX_BODY = 1 << 20
 
@@ -200,7 +211,7 @@ def serve(project, weights: str, host: str = "127.0.0.1", port: int = 8765, agen
             started = time.time()
             service.client.step("warm up", "", service.catalogue, 8)
             print(f"serve: engine warm in {time.time() - started:.1f} s", file=sys.stderr, flush=True)
-        server = ThreadingHTTPServer((host, port), make_handler(service, token, cors_origin, quiet))
+        server = LocalHTTPServer((host, port), make_handler(service, token, cors_origin, quiet))
         server.daemon_threads = True
         print(f"serve: http://{host}:{server.server_address[1]}  model {service.health()['model']}  "
               f"auth {'bearer token' if token else 'none (localhost)'}", file=sys.stderr, flush=True)

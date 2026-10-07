@@ -12,7 +12,18 @@ import signal
 import subprocess
 import sys
 import threading
+import socketserver
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer without the reverse DNS lookup of its own address at start-up
+    (HTTPServer.server_bind calls socket.getfqdn, which can take many seconds on macOS)."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
 
 WORKER = ("import signal, time\n"
           "for name in ('SIGTERM', 'SIGINT', 'SIGHUP'):\n"
@@ -47,7 +58,7 @@ def main() -> int:
     argv = sys.argv[1:]
     port = int(argv[argv.index("--port") + 1])
     worker = subprocess.Popen([sys.executable, "-c", WORKER], stdin=subprocess.DEVNULL)
-    httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    httpd = LocalHTTPServer(("127.0.0.1", port), Handler)
     httpd.daemon_threads = True
     target = os.environ.get("FAKE_SERVE_PIDS")
     if target:

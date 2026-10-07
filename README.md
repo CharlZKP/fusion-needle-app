@@ -18,9 +18,9 @@ Your text and your designs are not sent to a cloud service.
 [![Licence: Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
 ![Platforms: Windows, macOS, Linux](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)
 
-<!-- TODO(owner): hero screenshot. Save a PNG of the app with a finished goal as docs/screenshots/main.png,
-     then replace this comment with:
-     ![Fusion Needle with a finished goal](docs/screenshots/main.png) -->
+<p align="center">
+  <img src="docs/screenshots/step-by-step.png" width="900" alt="Fusion Needle running a three-step request: the plate is done and the hole is shown for approval before it runs">
+</p>
 
 > [!WARNING]
 > **Early version, not yet tried with a real Fusion.** It has only been tested against a stand-in for Fusion.
@@ -155,7 +155,9 @@ polar pattern ×6
 fillet the top edges R2
 ```
 
-<!-- TODO(owner): screenshot of a goal running step by step (docs/screenshots/step-by-step.png). -->
+| Start here | When a request cannot be run as written |
+| --- | --- |
+| ![The start screen with example requests](docs/screenshots/main.png) | ![A step that was held back, with the reason and requests that work](docs/screenshots/guard.png) |
 
 ## What you can ask for
 

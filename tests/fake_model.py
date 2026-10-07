@@ -8,7 +8,17 @@ from __future__ import annotations
 
 import json
 import threading
+import socketserver
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer without the reverse DNS lookup of its own address at start-up
+    (HTTPServer.server_bind calls socket.getfqdn, which can take many seconds on macOS)."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
 
 
 class FakeModel:
@@ -58,7 +68,7 @@ class FakeModel:
             def log_message(self, *_args):
                 pass
 
-        self.httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+        self.httpd = LocalHTTPServer(("127.0.0.1", port), Handler)
         self.httpd.daemon_threads = True
         self.url = f"http://127.0.0.1:{self.httpd.server_address[1]}"
         self.thread = threading.Thread(target=self.httpd.serve_forever, daemon=True)

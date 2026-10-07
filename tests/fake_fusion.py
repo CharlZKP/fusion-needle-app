@@ -31,10 +31,22 @@ import re
 import struct
 import threading
 import zlib
+import socketserver
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PNG_1X1 = ("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/"
            "q842iQAAAABJRU5ErkJggg==")
+
+
+class LocalHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer without the reverse DNS lookup of its own address at start-up
+    (HTTPServer.server_bind calls socket.getfqdn, which can take many seconds on macOS)."""
+
+    def server_bind(self):
+        socketserver.TCPServer.server_bind(self)
+        self.server_name, self.server_port = self.server_address[:2]
+
+
 FEATURE_NAMES = {"extrude": "Extrude", "create_hole": "Hole", "fillet": "Fillet", "chamfer": "Chamfer",
                  "shell": "Shell", "circular_pattern": "CircularPattern",
                  "rectangular_pattern": "RectangularPattern", "mirror": "Mirror", "revolve": "Revolve",
@@ -80,7 +92,7 @@ class FakeFusion:
         self.history: list[dict] = []
         self.redo_stack: list[dict] = []
         handler = self._handler()
-        self.httpd = ThreadingHTTPServer(("127.0.0.1", port), handler)
+        self.httpd = LocalHTTPServer(("127.0.0.1", port), handler)
         self.httpd.daemon_threads = True
         self.port = self.httpd.server_address[1]
         self.url = f"http://127.0.0.1:{self.port}/mcp"
