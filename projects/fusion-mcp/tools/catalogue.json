@@ -1,0 +1,521 @@
+[
+  {
+    "name": "create_sketch",
+    "description": "Start a new sketch on an origin plane or on a face of the body.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plane": {"type": "string", "enum": ["xy", "xz", "yz"], "default": "xy", "description": "origin plane: XY (top plane), XZ (front plane), YZ (right plane)"},
+        "face": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"], "description": "body face to sketch on instead of a plane"},
+        "offset": {"type": "number", "description": "offset from the plane in mm"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "draw_rectangle",
+    "description": "Draw a rectangle in the active sketch, centred on a point.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "width": {"type": "number", "exclusiveMinimum": 0, "description": "size along X in mm, the first number of 40x30"},
+        "height": {"type": "number", "exclusiveMinimum": 0, "description": "size along Y in mm, the second number of 40x30"},
+        "center_x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "center_y": {"type": "number", "default": 0, "description": "centre Y in mm"}
+      },
+      "required": ["width", "height"]
+    }
+  },
+  {
+    "name": "draw_circle",
+    "description": "Draw a circle in the active sketch.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "diameter": {"type": "number", "exclusiveMinimum": 0, "description": "diameter in mm, the number after Ø or 'dia'"},
+        "center_x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "center_y": {"type": "number", "default": 0, "description": "centre Y in mm"}
+      },
+      "required": ["diameter"]
+    }
+  },
+  {
+    "name": "draw_line",
+    "description": "Draw a straight line in the active sketch between two points.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "start_x": {"type": "number", "description": "start X in mm, the point after 'from'"},
+        "start_y": {"type": "number", "description": "start Y in mm, the point after 'from'"},
+        "end_x": {"type": "number", "description": "end X in mm, the point after 'to'"},
+        "end_y": {"type": "number", "description": "end Y in mm, the point after 'to'"}
+      },
+      "required": ["start_x", "start_y", "end_x", "end_y"]
+    }
+  },
+  {
+    "name": "draw_slot",
+    "description": "Draw a straight slot (obround) in the active sketch; 20x6 = length 20, width 6.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "length": {"type": "number", "exclusiveMinimum": 0, "description": "centre-to-centre length in mm"},
+        "width": {"type": "number", "exclusiveMinimum": 0, "description": "slot width in mm"},
+        "center_x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "center_y": {"type": "number", "default": 0, "description": "centre Y in mm"},
+        "angle": {"type": "number", "default": 0, "description": "rotation in degrees"}
+      },
+      "required": ["length", "width"]
+    }
+  },
+  {
+    "name": "add_dimension",
+    "description": "Add a driving dimension to entities of the active sketch.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "kind": {"type": "string", "enum": ["distance", "horizontal", "vertical", "diameter", "radius", "angle"], "description": "type of dimension"},
+        "value": {"type": "number", "description": "dimension value in mm, or degrees for angle"},
+        "entity_one": {"type": "integer", "minimum": 1, "description": "first entity number, e.g. the 2 of line 2"},
+        "entity_two": {"type": "integer", "minimum": 1, "description": "second entity number"}
+      },
+      "required": ["kind", "value"]
+    }
+  },
+  {
+    "name": "add_constraint",
+    "description": "Add a geometric constraint between entities of the active sketch.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "kind": {"type": "string", "enum": ["horizontal", "vertical", "parallel", "perpendicular", "tangent", "equal", "coincident", "concentric", "midpoint", "symmetric", "fix"], "description": "type of constraint"},
+        "entity_one": {"type": "integer", "minimum": 1, "description": "first entity number, e.g. the 2 of line 2"},
+        "entity_two": {"type": "integer", "minimum": 1, "description": "second entity number"}
+      },
+      "required": ["kind"]
+    }
+  },
+  {
+    "name": "extrude",
+    "description": "Extrude (pad) the active sketch profile into a solid, or cut it out of the body (pocket).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "distance": {"type": "number", "exclusiveMinimum": 0, "description": "distance in mm: thickness, height or depth"},
+        "operation": {"type": "string", "enum": ["new_body", "join", "cut", "intersect"], "default": "new_body", "description": "join adds material (boss), cut removes it (pocket)"},
+        "direction": {"type": "string", "enum": ["positive", "negative", "symmetric"], "default": "positive", "description": "side of the sketch plane; symmetric = both sides"},
+        "extent": {"type": "string", "enum": ["distance", "through_all"], "default": "distance", "description": "through_all = through everything"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "create_hole",
+    "description": "Drill a hole into a face of the body.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "diameter": {"type": "number", "exclusiveMinimum": 0, "description": "hole diameter in mm, the number after Ø or 'dia'"},
+        "x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "y": {"type": "number", "default": 0, "description": "centre Y in mm"},
+        "depth": {"type": "number", "exclusiveMinimum": 0, "description": "depth in mm of a blind hole; omit for a through hole"},
+        "face": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"], "default": "top", "description": "face to drill into"}
+      },
+      "required": ["diameter"]
+    }
+  },
+  {
+    "name": "circular_pattern",
+    "description": "Repeat a feature or body around an axis (polar pattern, circular array).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "count": {"type": "integer", "minimum": 2, "description": "total number of instances, the number after x or ×"},
+        "axis": {"type": "string", "enum": ["x", "y", "z"], "default": "z", "description": "axis to rotate around"},
+        "angle": {"type": "number", "default": 360, "description": "total angle in degrees"},
+        "target": {"type": "string", "enum": ["last_feature", "body"], "default": "last_feature", "description": "what to repeat"}
+      },
+      "required": ["count"]
+    }
+  },
+  {
+    "name": "rectangular_pattern",
+    "description": "Repeat a feature or body in a row or grid along X and Y (linear pattern).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "x_count": {"type": "integer", "minimum": 1, "description": "instances along X"},
+        "x_spacing": {"type": "number", "description": "spacing along X in mm"},
+        "y_count": {"type": "integer", "minimum": 1, "default": 1, "description": "instances along Y"},
+        "y_spacing": {"type": "number", "description": "spacing along Y in mm"},
+        "target": {"type": "string", "enum": ["last_feature", "body"], "default": "last_feature", "description": "what to repeat"}
+      },
+      "required": ["x_count", "x_spacing"]
+    }
+  },
+  {
+    "name": "mirror",
+    "description": "Mirror a feature or body across an origin plane.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "plane": {"type": "string", "enum": ["xy", "xz", "yz"], "description": "mirror plane"},
+        "target": {"type": "string", "enum": ["last_feature", "body"], "default": "last_feature", "description": "what to mirror"}
+      },
+      "required": ["plane"]
+    }
+  },
+  {
+    "name": "fillet",
+    "description": "Round edges of the body with a radius.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "radius": {"type": "number", "exclusiveMinimum": 0, "description": "fillet radius in mm, the number after R"},
+        "edges": {"type": "string", "enum": ["all", "top", "bottom", "vertical"], "default": "all", "description": "which edges of the body"}
+      },
+      "required": ["radius"]
+    }
+  },
+  {
+    "name": "chamfer",
+    "description": "Bevel edges of the body with an equal-distance chamfer.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "distance": {"type": "number", "exclusiveMinimum": 0, "description": "chamfer distance in mm"},
+        "edges": {"type": "string", "enum": ["all", "top", "bottom", "vertical"], "default": "all", "description": "which edges of the body"}
+      },
+      "required": ["distance"]
+    }
+  },
+  {
+    "name": "shell",
+    "description": "Hollow out the body, leaving walls of a given thickness and one face open.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "thickness": {"type": "number", "exclusiveMinimum": 0, "description": "wall thickness in mm"},
+        "open_face": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"], "default": "top", "description": "face to remove"}
+      },
+      "required": ["thickness"]
+    }
+  },
+  {
+    "name": "undo",
+    "description": "Undo the most recent operation.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "redo",
+    "description": "Redo the most recently undone operation.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "draw_polygon",
+    "description": "Draw a regular polygon such as a hexagon in the active sketch.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "shape": {"type": "string", "enum": ["triangle", "pentagon", "hexagon", "octagon"], "description": "which polygon"},
+        "size": {"type": "number", "exclusiveMinimum": 0, "description": "size in mm"},
+        "measure": {"type": "string", "enum": ["flats", "corners", "side"], "default": "flats", "description": "size is across flats, across corners or one side"},
+        "center_x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "center_y": {"type": "number", "default": 0, "description": "centre Y in mm"},
+        "angle": {"type": "number", "default": 0, "description": "rotation in degrees"}
+      },
+      "required": ["shape", "size"]
+    }
+  },
+  {
+    "name": "draw_arc",
+    "description": "Draw a circular arc in the active sketch, counter-clockwise from a start to an end angle.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "radius": {"type": "number", "exclusiveMinimum": 0, "description": "radius in mm, the number after R"},
+        "start_angle": {"type": "number", "default": 0, "description": "start angle in degrees"},
+        "end_angle": {"type": "number", "default": 180, "description": "end angle in degrees"},
+        "center_x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "center_y": {"type": "number", "default": 0, "description": "centre Y in mm"}
+      },
+      "required": ["radius"]
+    }
+  },
+  {
+    "name": "revolve",
+    "description": "Revolve the active sketch profile around an origin axis into a solid (turned part).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "axis": {"type": "string", "enum": ["x", "y", "z"], "description": "axis to revolve around"},
+        "angle": {"type": "number", "exclusiveMinimum": 0, "maximum": 360, "default": 360, "description": "angle in degrees"},
+        "operation": {"type": "string", "enum": ["new_body", "join", "cut", "intersect"], "default": "new_body", "description": "join adds material, cut removes it"}
+      },
+      "required": ["axis"]
+    }
+  },
+  {
+    "name": "combine",
+    "description": "Boolean of bodies: join the other bodies to the first body, subtract them from it, or keep the overlap.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "operation": {"type": "string", "enum": ["join", "cut", "intersect"], "default": "join", "description": "join merges, cut subtracts, intersect keeps the overlap"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "move_body",
+    "description": "Move the body by a distance along X, Y and Z.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "x": {"type": "number", "minimum": -10000, "maximum": 10000, "default": 0, "description": "distance along X in mm"},
+        "y": {"type": "number", "minimum": -10000, "maximum": 10000, "default": 0, "description": "distance along Y in mm"},
+        "z": {"type": "number", "minimum": -10000, "maximum": 10000, "default": 0, "description": "distance along Z (up) in mm"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "set_material",
+    "description": "Assign a physical material to the body.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "material": {"type": "string", "enum": ["steel", "stainless_steel", "aluminum", "brass", "copper", "titanium", "abs", "nylon"], "description": "material named in the request"}
+      },
+      "required": ["material"]
+    }
+  },
+  {
+    "name": "set_parameter",
+    "description": "Create a named user parameter or change its value.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]{0,31}$", "maxLength": 32, "description": "parameter name exactly as written, e.g. wall_t"},
+        "value": {"type": "number", "minimum": -100000, "maximum": 100000, "description": "the number after = or 'to'"},
+        "unit": {"type": "string", "enum": ["mm", "cm", "inch", "deg", "none"], "default": "mm", "description": "unit of the value; none for a plain count"}
+      },
+      "required": ["name", "value"]
+    }
+  },
+  {
+    "name": "list_parameters",
+    "description": "List the user parameters with their values.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "measure_body",
+    "description": "Report the size (bounding box), volume and mass of each body.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "check_timeline",
+    "description": "Check the timeline for features with errors or warnings.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "capture_view",
+    "description": "Take a screenshot of the model, optionally from a standard view direction.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {"type": "string", "enum": ["current", "front", "back", "bottom", "top", "left", "right", "iso-bottom-left", "iso-bottom-right", "iso-top-left", "iso-top-right"], "default": "current", "description": "view to capture from; iso = isometric corner"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "fit_view",
+    "description": "Zoom the view so the whole model fits the window.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "export_model",
+    "description": "Export the design to a file in a named format.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "format": {"type": "string", "enum": ["step", "stl", "3mf", "iges", "f3d"], "description": "file format named in the request"},
+        "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$", "maxLength": 40, "description": "file name without extension, exactly as written"}
+      },
+      "required": ["format"]
+    }
+  },
+  {
+    "name": "new_document",
+    "description": "Create a new empty design document.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "save_document",
+    "description": "Save the active document.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "open_document",
+    "description": "Find a saved document by name and open it.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,39}$", "maxLength": 40, "description": "document name or part of it, exactly as written"}
+      },
+      "required": ["name"]
+    }
+  },
+  {
+    "name": "create_box",
+    "description": "Create a box (block, cube) in one step, centred on the origin.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "width": {"type": "number", "exclusiveMinimum": 0, "description": "size along X in mm, the first number of 40x30x10"},
+        "depth": {"type": "number", "exclusiveMinimum": 0, "description": "size along Y in mm, the second number"},
+        "height": {"type": "number", "exclusiveMinimum": 0, "description": "size along Z (up) in mm, the third number"}
+      },
+      "required": ["width", "depth", "height"]
+    }
+  },
+  {
+    "name": "create_cylinder",
+    "description": "Create a cylinder (rod, disc) in one step, standing on the origin.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "diameter": {"type": "number", "exclusiveMinimum": 0, "description": "diameter in mm, the number after Ø or 'dia'"},
+        "height": {"type": "number", "exclusiveMinimum": 0, "description": "height or length in mm"}
+      },
+      "required": ["diameter", "height"]
+    }
+  },
+  {
+    "name": "center_hole",
+    "description": "Drill a hole at the centre (middle) of a face of the body.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "diameter": {"type": "number", "exclusiveMinimum": 0, "description": "hole diameter in mm, the number after Ø or 'dia'"},
+        "depth": {"type": "number", "exclusiveMinimum": 0, "description": "depth in mm of a blind hole; omit for a through hole"},
+        "face": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"], "default": "top", "description": "face to drill into"}
+      },
+      "required": ["diameter"]
+    }
+  },
+  {
+    "name": "corner_holes",
+    "description": "Drill a hole near each corner of a face of the body.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "diameter": {"type": "number", "exclusiveMinimum": 0, "description": "hole diameter in mm"},
+        "margin": {"type": "number", "exclusiveMinimum": 0, "description": "inset in mm from the edges"},
+        "depth": {"type": "number", "exclusiveMinimum": 0, "description": "depth in mm; omit for through holes"},
+        "face": {"type": "string", "enum": ["top", "bottom", "front", "back", "left", "right"], "default": "top", "description": "face to drill into"}
+      },
+      "required": ["diameter", "margin"]
+    }
+  },
+  {
+    "name": "bolt_hole",
+    "description": "Drill a clearance hole for a metric screw such as M6.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "size": {"type": "string", "enum": ["M3", "M4", "M5", "M6", "M8", "M10", "M12"], "description": "screw size"},
+        "style": {"type": "string", "enum": ["clearance", "counterbore", "countersink"], "default": "clearance", "description": "recess for the screw head"},
+        "x": {"type": "number", "default": 0, "description": "centre X in mm"},
+        "y": {"type": "number", "default": 0, "description": "centre Y in mm"}
+      },
+      "required": ["size"]
+    }
+  },
+  {
+    "name": "split_body",
+    "description": "Split the body into two bodies at its middle (cut it in half).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "direction": {"type": "string", "enum": ["vertical", "horizontal", "lengthwise"], "default": "vertical", "description": "horizontal = top and bottom halves; vertical = across the longest side; lengthwise = along it"},
+        "offset": {"type": "number", "description": "distance in mm of the cut from the middle"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "copy_body",
+    "description": "Duplicate the body: make copies of it in a row.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "count": {"type": "integer", "minimum": 1, "maximum": 100, "default": 1, "description": "number of copies, the number before 'times' or 'copies'"},
+        "spacing": {"type": "number", "exclusiveMinimum": 0, "description": "distance in mm from one copy to the next; omit for side by side"},
+        "axis": {"type": "string", "enum": ["x", "y", "z"], "default": "x", "description": "direction of the row"}
+      },
+      "required": []
+    }
+  },
+  {
+    "name": "set_thickness",
+    "description": "Change the thickness (height) of the existing body by editing its extrude.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "thickness": {"type": "number", "exclusiveMinimum": 0, "description": "new thickness or height in mm"}
+      },
+      "required": ["thickness"]
+    }
+  },
+  {
+    "name": "scale_body",
+    "description": "Scale the body uniformly by a factor (resize, make bigger or smaller).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "factor": {"type": "number", "exclusiveMinimum": 0, "maximum": 1000, "description": "scale factor as written: 2 doubles, 0.5 halves"}
+      },
+      "required": ["factor"]
+    }
+  },
+  {
+    "name": "rotate_body",
+    "description": "Rotate the body in place by an angle around an axis.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "angle": {"type": "number", "minimum": -360, "maximum": 360, "description": "angle in degrees"},
+        "axis": {"type": "string", "enum": ["x", "y", "z"], "default": "z", "description": "axis to rotate around; z is upright"}
+      },
+      "required": ["angle"]
+    }
+  },
+  {
+    "name": "delete_body",
+    "description": "Delete the body from the design.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "hide_body",
+    "description": "Hide the body (make it invisible) without deleting it.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "show_body",
+    "description": "Show hidden bodies again (unhide).",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "set_color",
+    "description": "Give the body a colour (appearance).",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "color": {"type": "string", "enum": ["red", "orange", "yellow", "green", "blue", "purple", "pink", "brown", "black", "white", "gray"], "description": "colour named in the request"}
+      },
+      "required": ["color"]
+    }
+  }
+]

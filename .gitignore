@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.venv/
+build/
+dist/
+out/
+# downloaded or local model files never belong in this repository
+*.cact
+*.safetensors
+model.bundle/
+projects/*/models/
+.env

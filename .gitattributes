@@ -1,0 +1,7 @@
+# Line endings the launchers need, whatever core.autocrlf says on the machine that checks out.
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.ps1      text eol=crlf
+*.sh       text eol=lf
+*.command  text eol=lf
+*.desktop  text eol=lf

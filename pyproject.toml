@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fusion-needle"
+version = "0.1.0"
+description = "Desktop app that drives Autodesk Fusion step by step with a Needle 3 fine-tune"
+readme = "README.md"
+requires-python = ">=3.12"
+# A .cact model file is tied to the engine version: change this pin together with
+# stepserver.NEEDLE_VERSION and the model revision in app/modelstore.py.
+dependencies = ["cactus-needle==3.1.1", "pyyaml"]
+
+[project.optional-dependencies]
+window = ["pywebview"]      # the app in its own window instead of a browser tab
+dev = ["pytest"]
+
+[tool.setuptools]
+packages = ["app", "stepserver"]
+py-modules = ["fusion_needle"]
+
+[tool.setuptools.package-data]
+app = ["ui/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

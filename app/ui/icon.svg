@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fusion Needle">
+  <!-- Original mark: a faceted needle and its thread on a folded orange tile. Not an Autodesk logo. -->
+  <defs><clipPath id="t"><rect width="64" height="64" rx="14"/></clipPath></defs>
+  <g clip-path="url(#t)">
+    <rect width="64" height="64" fill="#e9622b"/>
+    <path d="M64 12v52H12z" fill="#c8461c"/>
+    <path d="M45 19 55 29v15L43 56" fill="none" stroke="#ffd3b5" stroke-width="3.5" stroke-linejoin="miter"/>
+    <path d="M8 56 37 15 52 12z" fill="#ffffff"/>
+    <path d="M8 56 52 12 49 27z" fill="#ffd3b5"/>
+    <path d="M41 18.5 48 16 45.5 23z" fill="#c8461c"/>
+  </g>
+</svg>

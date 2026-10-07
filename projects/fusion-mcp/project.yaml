@@ -1,0 +1,4 @@
+name: fusion-mcp
+description: Step-by-step Autodesk Fusion caller. One modelling feature per turn, up to 4 tool calls per answer.
+tools: tools/catalogue.json
+max_tools_per_step: 5       # Needle presents at most 5 tool schemas per turn

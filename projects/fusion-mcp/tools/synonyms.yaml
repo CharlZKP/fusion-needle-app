@@ -1,0 +1,270 @@
+# Words of a request that name or clearly imply an enum value:
+# tool -> parameter -> enum value -> words or phrases (case-insensitive, whole words,
+# flexible inner whitespace). The router uses them as hints for choosing the tools of a step.
+
+create_sketch:
+  plane:
+    xy: ["xy", "x-y", "top plane"]
+    xz: ["xz", "x-z", "front plane"]
+    yz: ["yz", "y-z", "right plane"]
+  face:
+    top: ["top face", "top surface", "top side", "top of the", "on top", "upper face"]
+    bottom: ["bottom face", "bottom surface", "bottom side", "bottom of the", "underside", "lower face"]
+    front: ["front face", "front surface", "front side", "front of the"]
+    back: ["back face", "back surface", "back side", "back of the", "rear face"]
+    left: ["left face", "left surface", "left side", "left of the", "left-hand face"]
+    right: ["right face", "right surface", "right side", "right of the", "right-hand face"]
+
+add_dimension:
+  kind:
+    distance: ["distance", "length", "long", "apart", "spacing"]
+    horizontal: ["horizontal", "horizontally"]
+    vertical: ["vertical", "vertically"]
+    diameter: ["diameter", "dia", "ø", "⌀"]
+    radius: ["radius", "rad", "radial"]
+    angle: ["angle", "angular", "degrees", "degree", "deg", "°"]
+
+add_constraint:
+  kind:
+    horizontal: ["horizontal", "horizontally"]
+    vertical: ["vertical", "vertically"]
+    parallel: ["parallel"]
+    perpendicular: ["perpendicular", "square to", "at right angles"]
+    tangent: ["tangent", "tangential", "tangency"]
+    equal: ["equal", "equal length", "same length", "same size"]
+    coincident: ["coincident", "coincide", "coincides"]
+    concentric: ["concentric", "same centre", "same center"]
+    midpoint: ["midpoint", "mid-point", "middle of"]
+    symmetric: ["symmetric", "symmetrical", "symmetry"]
+    fix: ["fix", "fixed", "lock", "locked", "anchor"]
+
+extrude:
+  operation:
+    new_body: ["new body", "separate body", "new solid"]
+    join: ["join", "joined", "joining", "boss", "add material", "bump"]
+    cut: ["cut", "cuts", "cutting", "pocket", "pocketed", "recess", "recessed", "cutout", "cut-out", "remove material"]
+    intersect: ["intersect", "intersecting", "intersection"]
+  direction:
+    positive: ["positive"]
+    # v3: "downward", "extrude down" and "extrude bottom" are the flipped side
+    # (the sketch normal points up for a sketch on the XY plane, on an offset
+    # plane or on a top face). They were unlisted before, and the model guessed
+    # symmetric. Bare "down" and "bottom" stay unlisted: "cut down 6 mm",
+    # "knock down the edges" and "pocket on the bottom face" name no direction.
+    negative: ["negative", "reverse", "reversed", "flipped", "opposite direction", "downward", "downwards", "extrude down", "extrude it down", "extruded down", "pull down", "pull it down", "push down", "push it down", "extrude bottom", "bottom direction", "toward the bottom", "towards the bottom"]
+    symmetric: ["symmetric", "symmetrical", "symmetrically", "both sides", "both directions", "both ways", "mid-plane", "midplane", "mid plane"]
+  extent:
+    distance: ["blind"]
+    through_all: ["through all", "through", "thru all", "thru", "all the way through"]
+
+create_hole:
+  face:
+    top: ["top", "upper"]
+    bottom: ["bottom", "underside", "lower", "underneath"]
+    front: ["front"]
+    back: ["back", "rear"]
+    left: ["left", "left-hand"]
+    right: ["right face", "right side", "right surface", "from the right", "right-hand"]
+
+circular_pattern:
+  axis:
+    x: ["x axis", "x-axis", "axis x", "around x", "about x", "around the x", "about the x"]
+    y: ["y axis", "y-axis", "axis y", "around y", "about y", "around the y", "about the y"]
+    z: ["z axis", "z-axis", "axis z", "around z", "about z", "around the z", "about the z"]
+  target:
+    last_feature: ["last feature", "previous feature", "that feature", "the feature"]
+    body: ["body", "bodies", "solid", "whole part", "entire part", "whole thing"]
+
+rectangular_pattern:
+  target:
+    last_feature: ["last feature", "previous feature", "that feature", "the feature"]
+    body: ["body", "bodies", "solid", "whole part", "entire part", "whole thing"]
+
+mirror:
+  plane:
+    xy: ["xy", "x-y", "top plane"]
+    xz: ["xz", "x-z", "front plane"]
+    yz: ["yz", "y-z", "right plane"]
+  target:
+    last_feature: ["last feature", "previous feature", "that feature", "the feature"]
+    body: ["body", "bodies", "solid", "whole part", "entire part", "whole thing"]
+
+fillet:
+  edges:
+    all: ["all", "every", "everywhere"]
+    top: ["top", "upper"]
+    bottom: ["bottom", "lower", "underside"]
+    vertical: ["vertical", "upright", "corners", "corner edges"]
+
+chamfer:
+  edges:
+    all: ["all", "every", "everywhere"]
+    top: ["top", "upper"]
+    bottom: ["bottom", "lower", "underside"]
+    vertical: ["vertical", "upright", "corners", "corner edges"]
+
+shell:
+  open_face:
+    top: ["top", "upper"]
+    bottom: ["bottom", "underside", "lower", "underneath"]
+    front: ["front"]
+    back: ["back", "rear"]
+    left: ["left", "left-hand"]
+    right: ["right face", "right side", "right surface", "right open", "open right", "open at the right", "open on the right", "right-hand"]
+
+# ---- wrapper v2 --------------------------------------------------------------
+# Deliberately absent:
+#   * "polygon", "n-gon", "6-sided" do not evidence a shape: draw_polygon.shape
+#     needs the polygon's own name.
+#   * "wide", "size", "Ø" do not evidence draw_polygon.measure (default flats).
+#   * "plastic", "metal", "wood" name no material in the enum.
+#   * "in" is not a unit word (it is in every other sentence); inch needs
+#     "inch" / "inches".
+#   * "isometric" / "iso" alone mean the home view, iso-top-right; a named
+#     corner ("iso top left") wins over the bare word.
+#   * "screenshot", "picture", "view" evidence no direction (default current).
+#   * "cad file", "3d print file", "mesh" name no export format.
+
+draw_polygon:
+  shape:
+    triangle: ["triangle", "triangular"]
+    pentagon: ["pentagon", "pentagonal"]
+    hexagon: ["hexagon", "hexagonal", "hex"]
+    octagon: ["octagon", "octagonal"]
+  measure:
+    flats: ["across flats", "across the flats", "flat to flat", "flats", "AF", "A/F", "wrench size", "inscribed circle"]
+    corners: ["across corners", "across the corners", "corner to corner", "corners", "circumscribed", "circumcircle"]
+    side: ["side length", "side lengths", "edge length", "sides of", "per side", "each side"]
+
+revolve:
+  axis:
+    x: ["x axis", "x-axis", "axis x", "around x", "about x", "around the x", "about the x"]
+    y: ["y axis", "y-axis", "axis y", "around y", "about y", "around the y", "about the y"]
+    z: ["z axis", "z-axis", "axis z", "around z", "about z", "around the z", "about the z"]
+  operation:
+    new_body: ["new body", "separate body", "new solid"]
+    join: ["join", "joined", "joining", "add material"]
+    cut: ["cut", "cuts", "cutting", "groove", "remove material"]
+    intersect: ["intersect", "intersecting", "intersection"]
+
+combine:
+  operation:
+    join: ["join", "joined", "merge", "merged", "union", "unite", "fuse", "fused", "add together", "glue", "glued", "stick them together"]
+    cut: ["cut", "subtract", "subtracted", "subtraction", "difference", "remove"]
+    intersect: ["intersect", "intersecting", "intersection", "overlap", "common volume"]
+
+set_material:
+  material:
+    steel: ["steel", "mild steel", "carbon steel"]
+    stainless_steel: ["stainless steel", "stainless", "inox"]
+    aluminum: ["aluminum", "aluminium", "alu"]
+    brass: ["brass"]
+    copper: ["copper"]
+    titanium: ["titanium"]
+    abs: ["abs", "abs plastic"]
+    nylon: ["nylon", "polyamide"]
+
+set_parameter:
+  unit:
+    mm: ["mm", "millimetre", "millimetres", "millimeter", "millimeters"]
+    cm: ["cm", "centimetre", "centimetres", "centimeter", "centimeters"]
+    inch: ["inch", "inches"]
+    deg: ["deg", "degree", "degrees", "°"]
+    none: ["unitless", "no unit", "no units", "without unit", "dimensionless"]
+
+capture_view:
+  direction:
+    current: ["current view", "as it is", "as is", "this view"]
+    front: ["front", "from the front"]
+    back: ["back", "rear", "from behind"]
+    bottom: ["bottom", "from below", "from underneath", "underside"]
+    top: ["top", "from above", "plan view", "top-down", "top down"]
+    left: ["left", "left-hand"]
+    right: ["right view", "right side", "from the right", "right-hand"]
+    iso-bottom-left: ["iso bottom left", "iso-bottom-left", "isometric bottom left", "bottom left iso", "bottom-left isometric", "bottom left isometric"]
+    iso-bottom-right: ["iso bottom right", "iso-bottom-right", "isometric bottom right", "bottom right iso", "bottom-right isometric", "bottom right isometric"]
+    iso-top-left: ["iso top left", "iso-top-left", "isometric top left", "top left iso", "top-left isometric", "top left isometric"]
+    iso-top-right: ["iso top right", "iso-top-right", "isometric top right", "top right iso", "top-right isometric", "top right isometric", "isometric", "iso", "home view"]
+
+export_model:
+  format:
+    step: ["step file", "step export", "step format", "step copy", "step named", "step called", "step out", "as step", "as a step", "to step", "export step", "export a step", "export: step", "stp", ".step", ".stp"]
+    stl: ["stl", ".stl"]
+    3mf: ["3mf", ".3mf"]
+    iges: ["iges", "igs", ".iges", ".igs"]
+    f3d: ["f3d", ".f3d", "fusion archive"]
+
+# ---- wrapper v3 --------------------------------------------------------------
+# Deliberately absent:
+#   * bare top / bottom / front / back / left / right for the two hole tools:
+#     "go back", "bottom left corner" and "right in the middle" are everyday
+#     wording. A face needs a face noun or a preposition ("on the left",
+#     "leftside", "from below").
+#   * "corners" / "each corner" name the tool corner_holes, no argument.
+#   * "in half", "split", "cut" say nothing about split_body.direction (the
+#     schema default applies); "across" alone is too common to mean vertical.
+#   * "row", "next to each other", "side by side" name no copy_body.axis.
+#   * "twice", "double", "half", "50%" are not a scale factor: scale_body.factor
+#     is a number and must be written as one ("scale by 2", "x0.5").
+#   * "clockwise" / "counter-clockwise" name no rotate_body argument.
+#   * "counterbore" / "countersink" also name the tool bolt_hole; a bare
+#     "screw hole" / "bolt hole" names no style (default clearance).
+#   * "dark", "light", "metallic", "transparent" name no colour.
+
+center_hole:
+  face: &v3_faces
+    top: ["top face", "top surface", "top side", "top of the", "on top", "on the top", "from the top", "from above", "upper face"]
+    bottom: ["bottom face", "bottom surface", "bottom side", "bottom of the", "on the bottom", "from the bottom", "from below", "from underneath", "underside", "underneath", "lower face"]
+    front: ["front face", "front surface", "front side", "front of the", "on the front", "from the front"]
+    back: ["back face", "back surface", "back side", "back of the", "on the back", "from the back", "from behind", "rear face", "rear side", "on the rear"]
+    left: ["left face", "left surface", "left side", "leftside", "left of the", "on the left", "from the left", "left-hand face", "left-hand side"]
+    right: ["right face", "right surface", "right side", "rightside", "right of the", "on the right", "from the right", "right-hand face", "right-hand side"]
+
+corner_holes:
+  face: *v3_faces
+
+bolt_hole:
+  size:
+    M3: ["M3"]
+    M4: ["M4"]
+    M5: ["M5"]
+    M6: ["M6"]
+    M8: ["M8"]
+    M10: ["M10"]
+    M12: ["M12"]
+  style:
+    clearance: ["clearance", "plain hole", "plain through hole"]
+    counterbore: ["counterbore", "counterbored", "counter-bore", "counter-bored", "counter bore", "counter bored", "cbore", "c'bore", "socket head", "cap screw"]
+    countersink: ["countersink", "countersunk", "counter-sink", "counter-sunk", "counter sink", "counter sunk", "csk", "flat head", "flush head"]
+
+split_body:
+  direction:
+    vertical: ["vertical", "vertically", "vert", "upright cut", "crosswise", "cross-wise", "widthwise", "across the length", "across the long side", "across the middle"]
+    horizontal: ["horizontal", "horizontally", "horiz", "top and bottom", "upper and lower", "parallel to the ground", "like a bun", "into layers", "two layers"]
+    lengthwise: ["lengthwise", "length-wise", "lengthways", "along the length", "along its length", "along the long side", "down the middle", "longways"]
+
+copy_body:
+  axis:
+    x: ["x axis", "x-axis", "axis x", "along x", "along the x", "in x", "x direction", "x-direction"]
+    y: ["y axis", "y-axis", "axis y", "along y", "along the y", "in y", "y direction", "y-direction"]
+    z: ["z axis", "z-axis", "axis z", "along z", "along the z", "in z", "z direction", "z-direction", "stacked", "on top of each other"]
+
+rotate_body:
+  axis:
+    x: ["x axis", "x-axis", "axis x", "around x", "about x", "around the x", "about the x"]
+    y: ["y axis", "y-axis", "axis y", "around y", "about y", "around the y", "about the y"]
+    z: ["z axis", "z-axis", "axis z", "around z", "about z", "around the z", "about the z", "vertical axis", "upright axis"]
+
+set_color:
+  color:
+    red: ["red"]
+    orange: ["orange"]
+    yellow: ["yellow"]
+    green: ["green"]
+    blue: ["blue"]
+    purple: ["purple", "violet"]
+    pink: ["pink"]
+    brown: ["brown"]
+    black: ["black"]
+    white: ["white"]
+    gray: ["gray", "grey"]

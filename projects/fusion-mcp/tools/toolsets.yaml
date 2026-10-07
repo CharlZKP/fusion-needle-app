@@ -1,0 +1,147 @@
+# How the app treats each tool, and hints for choosing the 5 schemas of a step.
+# The model never sees this file. Read by backend/render.py (call_info) and
+# backend/router.py (pick_tools).
+
+# Ask the user before executing. Autodesk's own rule for save ("should not be
+# saved unless expressly instructed"); open and new replace the active document.
+# delete_body can be undone, but it removes a whole body and "the body" is by
+# convention the last one, so the app names it and asks first.
+confirm: [new_document, save_document, open_document, delete_body]
+
+# Change nothing in the design: no dialog check, never counted in a rollback.
+read_only: [list_parameters, measure_body, check_timeline, capture_view, fit_view]
+
+# Act, but leave no undo step in the active design: dialog check applies, never
+# counted in a rollback (an undo sent for them would revert an earlier feature).
+no_undo: [export_model, new_document, save_document, open_document]
+
+# Every catalogue tool is in exactly one group.
+groups:
+  sketch: [create_sketch, draw_rectangle, draw_circle, draw_line, draw_slot, draw_polygon, draw_arc, add_dimension, add_constraint]
+  feature: [extrude, revolve, create_hole, circular_pattern, rectangular_pattern, mirror, fillet, chamfer, shell,
+            center_hole, corner_holes, bolt_hole, set_thickness]
+  body: [combine, move_body, set_material, create_box, create_cylinder, split_body, copy_body, scale_body,
+         rotate_body, delete_body, hide_body, show_body, set_color]
+  history: [undo, redo]
+  parameter: [set_parameter, list_parameters]
+  inspect: [measure_body, check_timeline]
+  view: [capture_view, fit_view]
+  document: [export_model, new_document, save_document, open_document]
+
+routing:
+  # What the state line must show for the tool to make sense. A tool whose need
+  # is not met is ranked lower, never excluded (the model may answer [] or a
+  # compound that creates what is missing).
+  #   sketch  - "sketch: <name> on ..."        body   - at least one body
+  #   bodies2 - at least two bodies            feature - last_feature is not none
+  needs:
+    draw_rectangle: sketch
+    draw_circle: sketch
+    draw_line: sketch
+    draw_slot: sketch
+    draw_polygon: sketch
+    draw_arc: sketch
+    add_dimension: sketch
+    add_constraint: sketch
+    extrude: sketch
+    revolve: sketch
+    create_hole: body
+    circular_pattern: feature
+    rectangular_pattern: feature
+    mirror: feature
+    fillet: body
+    chamfer: body
+    shell: body
+    combine: bodies2
+    move_body: body
+    set_material: body
+    measure_body: body
+    export_model: body
+    center_hole: body
+    corner_holes: body
+    bolt_hole: body
+    split_body: body
+    copy_body: body
+    set_thickness: body
+    scale_body: body
+    rotate_body: body
+    delete_body: body
+    hide_body: body
+    show_body: body
+    set_color: body
+
+  # Words of a request that point at a tool. Matched like synonyms.yaml: case-
+  # insensitive, whole words, flexible inner whitespace. A trailing * matches
+  # any word ending (fillet* = fillet, fillets, filleted).
+  keywords:
+    create_sketch: ["sketch", "sketching", "new sketch", "start a sketch"]
+    draw_rectangle: ["rectangle", "rectangular", "rect", "square"]
+    draw_circle: ["circle", "circular hole", "round profile"]
+    draw_line: ["line", "segment"]
+    draw_slot: ["slot", "obround", "slotted"]
+    draw_polygon: ["polygon", "triangle", "triangular", "pentagon", "hexagon", "hexagonal", "hex", "octagon", "octagonal"]
+    draw_arc: ["arc", "semicircle", "half circle", "quarter circle"]
+    add_dimension: ["dimension*", "dim", "constrain the length", "long", "apart"]
+    add_constraint: ["constraint", "constrain", "horizontal", "vertical", "parallel", "perpendicular", "tangent", "equal", "coincident", "concentric", "midpoint", "symmetric", "fix", "lock"]
+    extrude: ["extrude*", "extrusion", "pad*", "pull", "thick*", "thk", "tall", "high", "deep", "height", "pocket", "boss", "cut", "recess", "cutout", "raise"]
+    revolve: ["revolve*", "revolution", "lathe", "turned", "spin", "sweep around"]
+    create_hole: ["hole*", "drill*", "bore", "through hole", "blind hole"]
+    circular_pattern: ["pattern*", "repeat*", "copies", "instances", "polar", "circular array", "in a circle", "around the axis", "bolt circle", "equally spaced"]
+    rectangular_pattern: ["pattern*", "repeat*", "copies", "instances", "grid", "row", "rows", "array", "pitch", "spacing", "direction"]
+    mirror: ["mirror*", "reflect*", "flip across"]
+    fillet: ["fillet*", "round the", "round off", "round over", "rounded", "radius the"]
+    chamfer: ["chamfer*", "bevel*", "break the edge", "break the edges"]
+    shell: ["shell*", "hollow*", "wall thickness", "walls"]
+    undo: ["undo", "ctrl+z", "revert", "take that back", "go back", "step back", "scrap that", "remove the last"]
+    redo: ["redo", "ctrl+y", "re-do", "bring it back", "put it back", "reapply"]
+    combine: ["combine*", "merge*", "union", "unite", "fuse", "subtract*", "boolean", "bodies together", "difference"]
+    move_body: ["move*", "shift*", "translate*", "slide", "nudge", "offset the body"]
+    set_material: ["material", "made of", "make it out of", "steel", "stainless", "aluminum", "aluminium", "brass", "copper", "titanium", "abs", "nylon"]
+    set_parameter: ["parameter", "param", "user parameter", "variable"]
+    list_parameters: ["parameters", "params", "list the parameters", "what parameters", "show the parameters", "user parameters", "variables"]
+    measure_body: ["measure*", "volume", "mass", "weight", "weigh*", "bounding box", "how big", "how heavy", "overall size", "overall dimensions", "surface area"]
+    check_timeline: ["timeline", "health", "healthy", "errors", "warnings", "broken", "break", "broke", "failed", "failing"]
+    capture_view: ["screenshot", "screen shot", "screen capture", "capture", "snapshot", "picture", "image of", "photo", "render a view"]
+    fit_view: ["fit", "zoom to fit", "zoom", "zoom out", "frame", "show everything", "can't see", "cannot see", "zoom extents"]
+    export_model: ["export*", "step", "stp", "stl", "3mf", "iges", "igs", "f3d", "save as step", "save as stl"]
+    new_document: ["new document", "new design", "new file", "blank", "empty document", "fresh document", "start a new", "start over in a new"]
+    save_document: ["save", "save it", "save the document", "save the design", "save the file", "save my work"]
+    open_document: ["open", "load", "open the document", "open the file", "open the design"]
+    # wrapper v3
+    create_box: ["box", "cube", "cuboid", "block"]
+    create_cylinder: ["cylinder", "cylindrical", "rod", "round bar"]
+    center_hole: ["centre hole", "center hole", "central hole", "in the centre", "in the center", "in the middle", "middle of", "centre of", "center of", "dead centre", "dead center"]
+    corner_holes: ["corner", "corners", "each corner", "every corner", "four corners", "4 corners", "margin", "inset"]
+    bolt_hole: ["M3", "M4", "M5", "M6", "M8", "M10", "M12", "counterbore*", "countersink*", "countersunk", "cbore", "csk", "clearance hole", "screw hole", "bolt hole", "screw", "bolt"]
+    split_body: ["split*", "cut in half", "in half", "halve", "halves", "in two", "into two", "slice*", "divide*", "saw"]
+    copy_body: ["duplicate*", "copy", "copies", "copied", "clone*", "replicate*", "another one"]
+    set_thickness: ["thinner", "thicker", "change to", "change it to", "thickness to", "height to", "change the thickness", "change the height", "taller", "shorter", "edit the extrude", "edit the extrusion", "plate instead"]
+    scale_body: ["scale*", "scaling", "resize*", "bigger", "smaller", "larger", "enlarge*", "shrink*"]
+    rotate_body: ["rotate", "rotate it", "rotates", "rotating", "rotation", "turn it", "turn the", "tilt*", "spin it", "on its side", "upside down"]
+    delete_body: ["delete*", "erase*", "get rid of", "remove the body", "remove body", "remove the part", "remove the object", "throw away"]
+    hide_body: ["hide*", "hidden", "invisible", "out of sight"]
+    show_body: ["show", "unhide*", "visible", "bring back"]
+    set_color: ["color*", "colour*", "paint*", "appearance", "red", "orange", "yellow", "green", "blue", "purple", "violet", "pink", "brown", "black", "white", "gray", "grey"]
+
+  # Offered only when one of their keywords is in the request: never on word
+  # overlap, an enum phrase or a fitting state alone, and never as padding.
+  keyword_only: [create_box, create_cylinder, center_hole, corner_holes, bolt_hole, split_body, copy_body,
+                 set_thickness, scale_body, rotate_body, delete_body, hide_body, show_body, set_color]
+
+  # A request that names a finished shape is a compound (sketch, draw, extrude).
+  # phrase list -> the tools every such answer uses.
+  compounds:
+    - words: ["plate", "block", "box", "slab", "cube", "cuboid", "bar", "brick", "base", "panel"]
+      tools: [create_sketch, draw_rectangle, extrude]
+    - words: ["disc", "disk", "cylinder", "rod", "puck", "washer", "round bar", "round plate", "post", "pin", "shaft"]
+      tools: [create_sketch, draw_circle, extrude]
+    - words: ["pocket", "recess", "cutout", "cut-out", "opening", "boss", "pad", "window"]
+      tools: [create_sketch, extrude]
+    - words: ["hex bar", "hex nut blank", "hexagonal bar", "hex prism"]
+      tools: [create_sketch, draw_polygon, extrude]
+
+  # Padding when the request points at fewer than 5 tools, by state, in order.
+  fill:
+    sketch: [draw_rectangle, draw_circle, extrude, draw_line, add_dimension, draw_slot, add_constraint, undo]
+    body: [create_sketch, create_hole, fillet, extrude, chamfer, undo, shell, measure_body]
+    empty: [create_sketch, draw_rectangle, extrude, draw_circle, undo, set_parameter, new_document]

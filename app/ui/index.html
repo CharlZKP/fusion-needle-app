@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="fn-token" content="__FN_TOKEN__">
+<title>Fusion Needle</title>
+<link rel="icon" href="/ui/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/ui/app.css">
+<script src="/ui/theme.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#goal">Skip to the request box</a>
+<header class="bar">
+  <div class="brand">
+    <img src="/ui/icon.svg" alt="" width="32" height="32">
+    <div class="wordmark"><strong>Fusion<b>Needle</b></strong><span id="project" class="muted"></span></div>
+  </div>
+  <div class="pills" role="group" aria-label="Connection status">
+    <button class="pill" id="pill-fusion" type="button" title=""><i class="dot"></i><span>Fusion</span><em></em></button>
+    <button class="pill" id="pill-model" type="button" title=""><i class="dot"></i><span>Model</span><em></em></button>
+    <button class="pill custom" id="pill-custom" type="button" title="This model is your own choice and is not checked by this project" hidden><span>Custom model</span><em></em></button>
+  </div>
+  <nav class="bar-actions" aria-label="App">
+    <button id="btn-theme" class="tool" type="button" aria-label="Theme" title="Theme">
+      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 3.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg>
+      <span id="theme-label">Auto</span></button>
+    <button id="btn-diagnostics" class="tool" type="button" title="Check Fusion, and collect what was sent and answered">
+      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M2 10.5h3.5l2-5 3.500 9.5 2.2-4.5H18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Diagnostics</span></button>
+    <button id="btn-settings" class="tool" type="button" title="Settings">
+      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 6h7m4 0h3M3 14h3m4 0h7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="14" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+      <span>Settings</span></button>
+    <button id="btn-quit" class="tool" type="button" title="Stop the app and the model">
+      <svg class="ic" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v6.5M6 5.3a6 6 0 1 0 8 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span>Quit</span></button>
+  </nav>
+</header>
+
+<div id="banner" class="banner" role="alert" hidden></div>
+
+<main class="layout">
+  <div class="flow">
+    <section id="setup" class="setup card" aria-label="Getting ready" hidden></section>
+
+    <section class="composer card" aria-label="Your request">
+      <div class="card-head">
+        <label for="goal" class="composer-label">What should Fusion do?</label>
+        <button id="btn-help" class="link" type="button" title="Example requests for everything the model can do">What can I say?</button>
+      </div>
+      <textarea id="goal" rows="2" spellcheck="false" aria-describedby="goal-hint"
+        placeholder="make a box 40 by 30 by 10"></textarea>
+      <div id="split-preview" class="split" aria-live="polite"></div>
+      <div class="composer-foot">
+        <p id="goal-hint" class="hint">One action per line, with its numbers. Join several with <kbd>then</kbd> or
+          <kbd>→</kbd>. <span class="keys"><kbd>Enter</kbd> runs · <kbd>Shift</kbd>+<kbd>Enter</kbd> new line</span></p>
+        <div class="row">
+          <button id="btn-stop" class="danger" type="button" hidden>Pause</button>
+          <button id="btn-run-all" type="button" title="Run every step without asking; stops when a step needs you (Ctrl+Enter)">Run all</button>
+          <button id="btn-run-step" class="primary" type="button" title="Show each step before it runs (Enter)">Step by step</button>
+        </div>
+      </div>
+      <div id="goal-note" class="hint note-line" aria-live="polite"></div>
+    </section>
+
+    <div id="activity" class="activity" role="status" hidden><i class="spin"></i><span></span></div>
+
+    <div id="steps-bar" class="steps-bar" hidden>
+      <h2 id="steps-title">Steps</h2>
+      <button id="btn-undo-step" class="small" type="button" title="Take the last finished step back out of Fusion">Undo last step</button>
+    </div>
+    <div id="steps"></div>
+
+    <div id="empty-state" class="empty">
+      <h1>Say one thing at a time, with its numbers.</h1>
+      <p>Fusion Needle turns each line into one Fusion command and shows it to you before anything runs.
+        It copies the numbers from your words and never guesses them.</p>
+      <div class="dodont">
+        <div class="do"><b>Works</b><span>fillet the top edges 2 mm</span></div>
+        <div class="dont"><b>Does not</b><span>make it a bit rounder</span></div>
+      </div>
+      <h2>Try one</h2>
+      <div id="starters" class="help-say"></div>
+      <div id="starter-parts"></div>
+      <p><button id="btn-help-empty" type="button">See everything you can say</button></p>
+    </div>
+  </div>
+
+  <aside class="side" aria-label="Design and history">
+    <section class="card">
+      <div class="card-head"><h2>Design state</h2>
+        <button id="btn-refresh" class="link" type="button">Refresh</button></div>
+      <div id="state-chips" class="chips"></div>
+      <div id="state-note" class="hint"></div>
+      <div class="row">
+        <button id="btn-undo-once" class="small" type="button" title="One undo in Fusion, whatever it was">Undo once in Fusion</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Session history</h2>
+      <div id="log-info" class="kv"></div>
+      <div class="row">
+        <button id="btn-check" type="button" hidden>Count entries</button>
+        <button id="btn-open-log" class="ghost" type="button">Open folder</button>
+      </div>
+      <div id="check-result" class="hint"></div>
+    </section>
+
+    <section class="card keys-card">
+      <h2>Keyboard</h2>
+      <dl class="keys-list">
+        <dt><kbd>A</kbd></dt><dd>approve the waiting step</dd>
+        <dt><kbd>E</kbd></dt><dd>edit its values</dd>
+        <dt><kbd>R</kbd></dt><dd>rewrite the request</dd>
+        <dt><kbd>S</kbd></dt><dd>skip it</dd>
+        <dt><kbd>/</kbd></dt><dd>go to the request box</dd>
+        <dt><kbd>?</kbd></dt><dd>what can I say?</dd>
+      </dl>
+    </section>
+  </aside>
+</main>
+
+<footer class="foot">
+  <span id="about">Fusion Needle</span>
+  <span>An independent open-source project. Not affiliated with, sponsored by or endorsed by Autodesk, Inc.
+    Autodesk and Fusion are trademarks of Autodesk, Inc.</span>
+</footer>
+
+<div id="modal" class="modal" hidden><div class="modal-box" role="dialog" aria-modal="true"></div></div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/ui/app.js"></script>
+</body>
+</html>

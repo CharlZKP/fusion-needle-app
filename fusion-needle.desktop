@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Fusion Needle
+Comment=Drive Autodesk Fusion step by step with a Needle 3 fine-tune
+# %k is the path of this file, so the entry works wherever the folder is.
+Exec=sh -c "exec \\"\\$(dirname \\"\\$1\\")/start-fusion-needle.sh\\"" fusion-needle %k
+Icon=applications-engineering
+Terminal=true
+Categories=Graphics;Engineering;
